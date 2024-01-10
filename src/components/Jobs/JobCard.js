@@ -44,9 +44,9 @@ const JobCard = (props) => {
         if(!!minSalary && !!maxSalary) {
             return `INR ${minSalary} - ${maxSalary} / month`
         }else if(!!minSalary) {
-            return `${minSalary}+ / month`;
+            return `INR ${minSalary}+ / month`;
         }else if(!!maxSalary){
-            return `Up to - ${maxSalary} /month`
+            return `INR up to ${maxSalary} / month`
         }
 
         return 'Salary - undisclosed';
