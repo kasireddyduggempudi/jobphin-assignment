@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { formFields, applyTypes, jobCreationSteps } from "../../utils/Constants";
 import { jobFormValidations } from "../../utils/Validations";
 import { createJob, updateJob } from "../../services/jobsService";
@@ -35,6 +35,22 @@ const CreateJobForm = ({jobId, closeModal}) => {
         setJobDetails((previousJobDetails) => ({...previousJobDetails, [field]: e.target.value}));
     }
 
+    const getJobPayload = () => {
+        let jobPayload = JSON.parse(JSON.stringify(jobDetails));
+        for(let formField of jobFormValidations) {
+            if(formField.mandatory && !jobPayload[formField.field]) {
+                throw new Error("Mandatory fields missing");
+            }
+            if(!formField.mandatory && !jobPayload[formField.field]) {
+                jobPayload[formField.field] = formField.defaultValue;
+            }
+            if(formField.type === 'NUMBER' && !!jobPayload[formField.field]) {
+                jobPayload[formField.field] = parseInt(jobPayload[formField.field]);
+            }
+        }
+        return jobPayload;
+    }
+
     const saveJob = () => {
         if(!!jobDetails.id) {
             editJob();
@@ -45,7 +61,7 @@ const CreateJobForm = ({jobId, closeModal}) => {
 
     const addJob = () => {
         setSaving(true);
-        createJob(jobDetails)
+        createJob(getJobPayload(jobDetails))
         .then(data => {
             jobsDispatch({type: jobsReducerActionTypes.ADD_JOB, payload: data});
             closeModal();
@@ -58,7 +74,7 @@ const CreateJobForm = ({jobId, closeModal}) => {
 
     const editJob = () => {
         setSaving(true);
-        updateJob(jobDetails)
+        updateJob(getJobPayload(jobDetails))
         .then(data => {
             jobsDispatch({type: jobsReducerActionTypes.EDIT_JOB, payload: data});
             closeModal();
@@ -72,7 +88,7 @@ const CreateJobForm = ({jobId, closeModal}) => {
     return (
         <>
         {
-            creationStep == jobCreationSteps.STEP_1
+            creationStep === jobCreationSteps.STEP_1
             ?(
             <div className="flex flex-col gap-y-[24px] w-full">
                 <div className="flex justify-between">
@@ -161,11 +177,11 @@ const CreateJobForm = ({jobId, closeModal}) => {
                     <label className="text-fontDark text-sm">Apply type</label>
                     <div className="relative flex gap-x-4">
                         <div className="flex items-center mb-4">
-                            <input id="quickApply" type="radio" checked={jobDetails[formFields.APPLY_TYPE] == applyTypes.QUICK_APPLY} onChange={(e) => handleFormChange(e, 'applyType')} value={applyTypes.QUICK_APPLY} name="applyType" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
+                            <input id="quickApply" type="radio" checked={jobDetails[formFields.APPLY_TYPE] === applyTypes.QUICK_APPLY} onChange={(e) => handleFormChange(e, 'applyType')} value={applyTypes.QUICK_APPLY} name="applyType" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
                             <label htmlFor="quickApply" className="text-fontDark text-sm ms-2">Quick Apply</label>
                         </div>
                         <div className="flex items-center mb-4">
-                            <input id="externalApply" type="radio" checked={jobDetails[formFields.APPLY_TYPE] == applyTypes.EXTERNAL_APPLY} onChange={(e) => handleFormChange(e, 'applyType')} value={applyTypes.EXTERNAL_APPLY} name="applyType" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600" />
+                            <input id="externalApply" type="radio" checked={jobDetails[formFields.APPLY_TYPE] === applyTypes.EXTERNAL_APPLY} onChange={(e) => handleFormChange(e, 'applyType')} value={applyTypes.EXTERNAL_APPLY} name="applyType" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:ring-offset-gray-800  dark:bg-gray-700 dark:border-gray-600" />
                             <label htmlFor="externalApply" className="text-fontDark text-sm ms-2">External Apply</label>
                         </div>
                     </div>

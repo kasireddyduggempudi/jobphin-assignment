@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import netflix_logo from '../../assets/images/netflix_logo.png'
 import { JobsContext } from '../../state/context/JobsContext';
 import { jobsReducerActionTypes } from '../../state/reducers/jobsReducer';
@@ -33,14 +33,42 @@ const JobCard = (props) => {
             return `${minExp} - ${maxExp} years`;
         }else if(!!minExp) {
             return `${minExp}+ years`;
-        }else {
+        }else if(!!maxExp){
             return `0 - ${maxExp} years`
         }
 
         return 'Any';
     }
 
+    const getSalary = (minSalary, maxSalary) => {
+        if(!!minSalary && !!maxSalary) {
+            return `INR ${minSalary} - ${maxSalary} / month`
+        }else if(!!minSalary) {
+            return `${minSalary}+ / month`;
+        }else if(!!maxSalary){
+            return `Up to - ${maxSalary} /month`
+        }
+
+        return 'Salary - undisclosed';
+    }
+
+    const getLocation = (location, remoteType) => {
+        if(!!location && !!remoteType) {
+            return `${location} (${remoteType})`;
+        }
+        if(!!location) {
+            return `${location}`;
+        }
+        if(!!remoteType) {
+            return `${remoteType}`;
+        }
+        return "Anywhere";
+    }
+
     const removeJob = () => {
+        if(isDeleting) {
+            return;
+        }
         setDeleting(true);
         deleteJob(jobId)
         .then(data => {
@@ -66,24 +94,24 @@ const JobCard = (props) => {
         <div className='flex px-[24px] py-[16px] bg-white rounded-lg w-[100%] lg:max-w-[780px]' style={{gap: '8px', border: '1px solid #E6E6E6'}}>
             <div>
                 <div style={{maxWidth: '50px'}}>
-                    <img className='relative w-[100%] h-[50px] rounded' src={netflix_logo}  />
+                    <img className='relative w-[100%] h-[50px] rounded' src={netflix_logo}  alt='Company Logo' />
                 </div>
             </div>
             <div className='w-full'>
                 <div className='space-y-1'>
                     <h3 className='text-xl'>{jobTitle}</h3>
                     <p className='text-lg font-large'>{`${companyName} - ${industry}`}</p>
-                    <p className='text-lg font-light text-gray-500'>{`${location} (${remoteType})`}</p>
+                    <p className='text-lg font-light text-gray-500'>{getLocation(location, remoteType)}</p>
                 </div>
                 <div className='text-lg font-large space-y-[8px] mt-[24px]'>
                     <p>Part-Time (9.00 am - 5.00 pm IST)</p>
                     <p>Experience ({getExperience(minExperience, maxExperience)})</p>
-                    <p>{`INR ${minSalary} - ${maxSalary} / month`}</p>
-                    <p>{totalEmployeeCount} employees</p>
+                    <p>{getSalary(minSalary, maxSalary)}</p>
+                    <p>{totalEmployeeCount || '0 - 2'} employees</p>
                 </div>
                 <div className='mt-[24px] flex'>
                     { 
-                        applyType == applyTypes.EXTERNAL_APPLY
+                        applyType === applyTypes.EXTERNAL_APPLY
                         ? <button className='text-[#1597E4] px-4 py-2 rounded' style={{border: '1px solid #1597E4'}}>Apply External</button>
                         : <button className='text-white px-4 py-2 rounded' style={{backgroundColor: '#1597E4'}}>Apply Now</button>
                     }
